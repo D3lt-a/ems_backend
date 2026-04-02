@@ -72,7 +72,7 @@ app.get('/employees/:id', async (req, res) => {
 app.post('/employees/create', async (req, res) => {
     const { fname, lname, position, address, phone, gender, code } = req.body;
     try {
-        await db.query('INSERT INTO employee(FirstName, LastName, Position, Address, Telephone, Gender, DepartmentCode) VALUES (?, ?, ?, ?, ?, ?, ?)', 
+        await db.query('INSERT INTO employee(FirstName, LastName, Position, Address, Telephone, Gender, DepartmentCode) VALUES (?, ?, ?, ?, ?, ?, ?)',
             [fname, lname, position, address, phone, gender, code]);
         console.log('[V] Employee created successfully');
         res.status(201).json({ message: 'Employee created successfully' });
@@ -82,9 +82,74 @@ app.post('/employees/create', async (req, res) => {
     }
 })
 
+// =============== Salary Routes ===============
 
-// =============== Department Routes ===============
+app.get('/salaries', async (req, res) => {
+    try {
+        const [rows] = await db.query('SELECT * FROM salary');
+        console.log('[V] Salaries retrieved successfully');
+        res.status(200).json({ message: 'Salaries retrieved successfully', data: rows });
+    } catch (error) {
+        console.error('[X] Error retrieving salaries:', error);
+        res.status(500).json({ message: 'Error retrieving salaries' });
+    }
+})
 
+app.get('/salaries/:id', async (req, res) => {
+    const { id } = req.params;
+    try {
+        const [rows] = await db.query('SELECT * FROM salary WHERE employeeNumber = ?', [id]);
+        console.log('[V] Salaries retrieved successfully');
+        res.status(200).json({ message: 'Salaries retrieved successfully', data: rows });
+    } catch (error) {
+        console.error('[X] Error retrieving salaries:', error);
+        res.status(500).json({ message: 'Error retrieving salaries' });
+    }
+})
+
+app.post('/salaries/create', async (req, res) => {
+    const { emp, salary, deduction, netsalary, month } = req.body;
+    try {
+        await db.query('INSERT INTO salary(EmployeeNumber, GrossSalary , TotalDeduction , NetSalary , month) VALUES (?, ?, ?, ?, ?)',
+            [emp, salary, deduction, netsalary, month]);
+        console.log('[V] Salary created successfully');
+        res.status(201).json({ message: 'Salary created successfully' });
+    } catch (error) {
+        console.error('[X] Error creating salary:', error);
+        res.status(500).json({ message: 'Error creating salary' });
+    }
+})
+
+app.put('/salaries/update/:id', async (req, res) => {
+    const { id } = req.params;
+    const { salary, deduction, netsalary } = req.body;
+    try {
+        const [rows] = await db.query('UPDATE salary SET GrossSalary = ?, TotalDeduction = ?, NetSalary = ? WHERE employeeNumber = ?',
+            [salary, deduction, netsalary, id]);
+        if (rows.length === 0) {
+            console.log('[X] Salary not found for update');
+            res.status(404).json({ message: 'Salary not found' });
+        } else {
+            console.log('[V] Salary updated successfully');
+            res.status(200).json({ message: 'Salary updated successfully' });
+        }
+    } catch (error) {
+        console.error('[X] Error updating salary:', error);
+        res.status(500).json({ message: 'Error updating salary' });
+    }
+})
+
+app.delete('/salaries/delete/:id', async (req, res) => {
+    const { id } = req.params;
+    try {
+        await db.query('DELETE FROM salary WHERE employeeNumber = ?', [id]);
+        console.log('[V] Salary deleted successfully');
+        res.status(200).json({ message: 'Salary deleted successfully' });
+    } catch (error) {
+        console.error('[X] Error deleting salary:', error);
+        res.status(500).json({ message: 'Error deleting salary' });
+    }
+})
 
 app.listen(port, () => {
     console.log(`Server is running here: http://localhost:${port}`);
