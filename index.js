@@ -151,6 +151,39 @@ app.delete('/salaries/delete/:id', async (req, res) => {
     }
 })
 
+// =============== Payroll Routes ===============
+
+app.get('/payrolls', async (req, res) => {
+    try {
+        await db.query(`
+                SELECT e.FirstName, e.LastName, e.Postion, d.DepartmentName, s.NetSalary, s.month
+                FROM employee e
+                JOIN department d ON e.DepartmentCode = d.DepartmentCode
+                JOIN salary s ON e.employeeNumber = s.EmployeeNumber
+            `);
+    } catch (error) {
+        console.error('[X] Error retrieving payrolls:', error);
+        res.status(500).json({ message: 'Error retrieving payrolls' });
+    }
+})
+
+app.get('/payrolls/:month', async (req, res) => {
+    const { month } = req.params;
+    try {
+        await db.query(`
+                SELECT e.FirstName, e.LastName, e.Postion, d.DepartmentName, s.NetSalary, s.month
+                FROM employee e
+                JOIN department d ON e.DepartmentCode = d.DepartmentCode
+                JOIN salary s ON e.employeeNumber = s.EmployeeNumber
+                WHERE s.month = ?
+            `, [month]);
+    } catch (error) {
+        console.error('[X] Error retrieving payrolls:', error);
+        res.status(500).json({ message: 'Error retrieving payrolls' });
+    }
+})
+
+
 app.listen(port, () => {
     console.log(`Server is running here: http://localhost:${port}`);
 })
